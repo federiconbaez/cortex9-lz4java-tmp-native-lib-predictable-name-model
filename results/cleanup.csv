@@ -1,0 +1,7 @@
+id,class,version,deleted,rule
+c01_native_test,diff_test,pre,[],"L25,L32-33"
+c01_native_test,diff_test,post,"[""liblz4-java-123.so"", ""liblz4-java-123.so.lck"", ""liblz4-java-456.dll.lck""]","L10,L26,L35"
+c02_fresh_lib_without_lck,compat,pre,"[""liblz4-java-555.so""]","L25,L32-33"
+c02_fresh_lib_without_lck,compat,post,[],"L10,L26,L35"
+c03_old_lib_without_lck,compat,pre,"[""liblz4-java-666.so""]","L25,L32-33"
+c03_old_lib_without_lck,compat,post,"[""liblz4-java-666.so""]","L10,L26,L35"

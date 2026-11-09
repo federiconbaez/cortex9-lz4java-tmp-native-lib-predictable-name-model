@@ -1,0 +1,263 @@
+{
+ "note": "Hand-written. Simulated directory only: nothing is written to a real temporary directory and no library is loaded. 'ATTACKER' is an inert marker string.",
+ "load": [
+  {
+   "id": "p01_file_sticky_pr0",
+   "class": "pos",
+   "dir": {
+    "world_writable": true,
+    "sticky": true,
+    "protected_regular": 0,
+    "protected_symlinks": 1
+   },
+   "attacker": "plant_file",
+   "randoms": [
+    "a1b2",
+    "c3d4"
+   ],
+   "why": "GHSA: protected_regular = 0, pre-created world-writable file",
+   "expected": {
+    "pre": "ATTACKER_CODE_LOADED",
+    "post": "LOADED_BUNDLED"
+   }
+  },
+  {
+   "id": "p02_file_no_sticky",
+   "class": "pos",
+   "dir": {
+    "world_writable": true,
+    "sticky": false,
+    "protected_regular": 2,
+    "protected_symlinks": 1
+   },
+   "attacker": "plant_file",
+   "randoms": [
+    "a1b2",
+    "c3d4"
+   ],
+   "why": "GHSA: no sticky bit, exploitable whatever the sysctls",
+   "expected": {
+    "pre": "ATTACKER_CODE_LOADED",
+    "post": "LOADED_BUNDLED"
+   }
+  },
+  {
+   "id": "p03_symlink_sticky_ps0",
+   "class": "pos",
+   "dir": {
+    "world_writable": true,
+    "sticky": true,
+    "protected_regular": 0,
+    "protected_symlinks": 0
+   },
+   "attacker": "plant_symlink",
+   "randoms": [
+    "a1b2",
+    "c3d4"
+   ],
+   "why": "GHSA: FileOutputStream follows symlinks",
+   "expected": {
+    "pre": "ATTACKER_CODE_LOADED",
+    "post": "LOADED_BUNDLED"
+   }
+  },
+  {
+   "id": "p04_file_sticky_pr1_dos",
+   "class": "pos",
+   "dir": {
+    "world_writable": true,
+    "sticky": true,
+    "protected_regular": 1,
+    "protected_symlinks": 1
+   },
+   "attacker": "plant_file",
+   "randoms": [
+    "a1b2",
+    "c3d4"
+   ],
+   "why": "GHSA: protected_regular >= 1, open fails, Java fallback",
+   "expected": {
+    "pre": "DOS_FALLBACK",
+    "post": "LOADED_BUNDLED"
+   }
+  },
+  {
+   "id": "p05_symlink_sticky_ps1_dos",
+   "class": "pos",
+   "dir": {
+    "world_writable": true,
+    "sticky": true,
+    "protected_regular": 0,
+    "protected_symlinks": 1
+   },
+   "attacker": "plant_symlink",
+   "randoms": [
+    "a1b2",
+    "c3d4"
+   ],
+   "why": "GHSA: symlink variant blocked by protected_symlinks = 1",
+   "expected": {
+    "pre": "DOS_FALLBACK",
+    "post": "LOADED_BUNDLED"
+   }
+  },
+  {
+   "id": "p06_lucky_guess_preplanted",
+   "class": "pos",
+   "dir": {
+    "world_writable": true,
+    "sticky": true,
+    "protected_regular": 0,
+    "protected_symlinks": 0
+   },
+   "attacker": "preplant_guess",
+   "guess": "liblz4-java-a1b2.so",
+   "randoms": [
+    "a1b2",
+    "c3d4"
+   ],
+   "why": "pre never checks that the .lck stem is free, so a file planted in advance at the right name is reused (needs the random part; here a lucky guess). post: exclusive creation hits EEXIST and createTempFile retries",
+   "expected": {
+    "pre": "ATTACKER_CODE_LOADED",
+    "post": "LOADED_BUNDLED"
+   }
+  },
+  {
+   "id": "n01_no_attacker",
+   "class": "neg",
+   "dir": {
+    "world_writable": true,
+    "sticky": true,
+    "protected_regular": 1,
+    "protected_symlinks": 1
+   },
+   "attacker": "none",
+   "randoms": [
+    "a1b2",
+    "c3d4"
+   ],
+   "why": "normal extraction",
+   "expected": {
+    "pre": "LOADED_BUNDLED",
+    "post": "LOADED_BUNDLED"
+   }
+  },
+  {
+   "id": "n02_blind_guess",
+   "class": "neg",
+   "dir": {
+    "world_writable": true,
+    "sticky": true,
+    "protected_regular": 0,
+    "protected_symlinks": 0
+   },
+   "attacker": "preplant_guess",
+   "guess": "liblz4-java-zzzz.so",
+   "randoms": [
+    "a1b2",
+    "c3d4"
+   ],
+   "why": "the name is only predictable once the .lck exists",
+   "expected": {
+    "pre": "LOADED_BUNDLED",
+    "post": "LOADED_BUNDLED"
+   }
+  },
+  {
+   "id": "n03_private_tmpdir",
+   "class": "neg",
+   "dir": {
+    "world_writable": false,
+    "sticky": false,
+    "protected_regular": 0,
+    "protected_symlinks": 0
+   },
+   "attacker": "plant_file",
+   "randoms": [
+    "a1b2",
+    "c3d4"
+   ],
+   "why": "GHSA: a java.io.tmpdir private to the user is not affected",
+   "expected": {
+    "pre": "LOADED_BUNDLED",
+    "post": "LOADED_BUNDLED"
+   }
+  },
+  {
+   "id": "o01_replace_no_sticky",
+   "class": "observation",
+   "dir": {
+    "world_writable": true,
+    "sticky": false,
+    "protected_regular": 0,
+    "protected_symlinks": 0
+   },
+   "attacker": "replace_after_write",
+   "randoms": [
+    "a1b2",
+    "c3d4"
+   ],
+   "why": "MODEL OBSERVATION, not verified: without the sticky bit another user can unlink and replace any file between write and load",
+   "expected": {
+    "pre": "ATTACKER_CODE_LOADED",
+    "post": "ATTACKER_CODE_LOADED"
+   }
+  }
+ ],
+ "cleanup": [
+  {
+   "id": "c01_native_test",
+   "class": "diff_test",
+   "now": 1576800000000,
+   "entries": {
+    "liblz4-java-123.so": 1576792800000,
+    "liblz4-java-123.so.lck": 1576792800000,
+    "liblz4-java-456.dll.lck": 1576792800000,
+    "liblz4-java-789.so": 1576799700000,
+    "liblz4-java-789.so.lck": 1576799700000,
+    "libother-123.so": 1576792800000
+   },
+   "expected": {
+    "pre": [],
+    "post": [
+     "liblz4-java-123.so",
+     "liblz4-java-123.so.lck",
+     "liblz4-java-456.dll.lck"
+    ]
+   },
+   "why": "NativeTest L186-216; pre never removes a lib with a .lck and never removes .lck files"
+  },
+  {
+   "id": "c02_fresh_lib_without_lck",
+   "class": "compat",
+   "now": 1576800000000,
+   "entries": {
+    "liblz4-java-555.so": 1576799700000
+   },
+   "expected": {
+    "pre": [
+     "liblz4-java-555.so"
+    ],
+    "post": []
+   },
+   "why": "post libs have no .lck; age keeps one another process is loading"
+  },
+  {
+   "id": "c03_old_lib_without_lck",
+   "class": "compat",
+   "now": 1576800000000,
+   "entries": {
+    "liblz4-java-666.so": 1576792800000
+   },
+   "expected": {
+    "pre": [
+     "liblz4-java-666.so"
+    ],
+    "post": [
+     "liblz4-java-666.so"
+    ]
+   },
+   "why": "stale leftover removed by both"
+  }
+ ]
+}

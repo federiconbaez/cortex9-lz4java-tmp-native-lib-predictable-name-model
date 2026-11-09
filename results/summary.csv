@@ -1,0 +1,8 @@
+class,version,outcome,n
+neg,post,LOADED_BUNDLED,3
+neg,pre,LOADED_BUNDLED,3
+observation,post,ATTACKER_CODE_LOADED,1
+observation,pre,ATTACKER_CODE_LOADED,1
+pos,post,LOADED_BUNDLED,6
+pos,pre,ATTACKER_CODE_LOADED,4
+pos,pre,DOS_FALLBACK,2
